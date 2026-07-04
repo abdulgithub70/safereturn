@@ -1,7 +1,21 @@
+'use client';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { Search, Shield, Heart, Users, ArrowRight, AlertCircle, CheckCircle } from 'lucide-react';
+import { useAuthStore } from '@/store/authStore';
 
 export default function HomePage() {
+  const { isAuthenticated } = useAuthStore();
+  const router = useRouter();
+
+  const handleReportClick = () => {
+    if (isAuthenticated) {
+      router.push('/reports/new');
+    } else {
+      router.push('/auth/login?redirect=/reports/new');
+    }
+  };
+
   return (
     <div className="min-h-screen bg-background">
       {/* Nav */}
@@ -51,13 +65,13 @@ export default function HomePage() {
             verified platform. Report a found child, or search for your missing one.
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <Link
-              href="/reports/new"
+            <button
+              onClick={handleReportClick}
               className="inline-flex items-center justify-center gap-2 bg-primary text-primary-foreground px-8 py-4 rounded-lg font-semibold text-lg hover:bg-primary/90 transition-colors shadow-lg shadow-primary/20"
             >
               <AlertCircle className="w-5 h-5" />
               Report a Found Child
-            </Link>
+            </button>
             <Link
               href="/reports"
               className="inline-flex items-center justify-center gap-2 bg-white border-2 border-border px-8 py-4 rounded-lg font-semibold text-lg hover:bg-accent transition-colors"

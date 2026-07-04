@@ -1,5 +1,5 @@
 'use client';
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useRouter } from 'next/navigation';
@@ -7,6 +7,7 @@ import { Loader2, Upload, X, ChevronRight, ChevronLeft, AlertCircle, CheckCircle
 import Image from 'next/image';
 import toast from 'react-hot-toast';
 import { reportsAPI } from '@/lib/api';
+import { useAuthStore } from '@/store/authStore';
 import { childReportSchema } from '@/lib/validations';
 import { cn } from '@/lib/utils';
 
@@ -52,10 +53,23 @@ function StepIndicator({ steps, current }) {
 
 export default function NewReportPage() {
   const router = useRouter();
+  const { isAuthenticated, user } = useAuthStore();
+
+  // Auth guard — redirect to login if not logged in
+  useEffect(() => {
+    if (!isAuthenticated) {
+      toast.error('Please sign in to report a found child');
+      router.push('/auth/login?redirect=/reports/new');
+    }
+  }, [isAuthenticated, router]);
+
   const [step, setStep] = useState(0);
   const [photos, setPhotos] = useState([]);
   const [photoPreview, setPhotoPreview] = useState([]);
   const [isSubmitting, setIsSubmitting] = useState(false);
+
+  // Show nothing while redirecting
+  if (!isAuthenticated) return null;
 
   const { register, handleSubmit, trigger, formState: { errors } } = useForm({
     resolver: zodResolver(childReportSchema),
@@ -323,12 +337,12 @@ export default function NewReportPage() {
                   </div>
                   <div className="grid grid-cols-2 gap-4">
                     <div>
-                      <label className="block text-sm font-medium mb-1.5">Contact Person</label>
+                      <label className="block text-sm font-medium mb-1.5">Contact Person Name<span className="text-destructive">*</span></label>
                       <input {...register('custodyDetails.contactPerson')} type="text" placeholder="Officer/staff name"
                         className="w-full px-3 py-2.5 border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary" />
                     </div>
                     <div>
-                      <label className="block text-sm font-medium mb-1.5">Contact Phone</label>
+                      <label className="block text-sm font-medium mb-1.5">Contact Phone<span className="text-destructive">*</span></label>
                       <input {...register('custodyDetails.contactPhone')} type="tel" placeholder="Phone number"
                         className="w-full px-3 py-2.5 border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary" />
                     </div>

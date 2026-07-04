@@ -3,7 +3,7 @@ import { useState, useEffect } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import Image from 'next/image';
 import Link from 'next/link';
-import { MapPin, Clock, User, Shield, AlertTriangle, ChevronLeft, Share2, Flag, CheckCircle, FileText } from 'lucide-react';
+import { MapPin, Clock, User, Shield, AlertTriangle, ChevronLeft, Share2, Flag, CheckCircle, FileText, Phone, Mail } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { reportsAPI } from '@/lib/api';
 import { useAuthStore } from '@/store/authStore';
@@ -197,7 +197,7 @@ export default function ReportDetailPage() {
               <InfoRow label="Contact Person" value={report.custodyDetails?.contactPerson} />
             </div>
 
-            {/* Reporter */}
+            {/* Reporter / Finder Contact */}
             <div className="bg-white rounded-xl border p-5">
               <h2 className="font-semibold mb-4 flex items-center gap-2">
                 <FileText className="w-4 h-4 text-primary" /> Reported By
@@ -206,6 +206,67 @@ export default function ReportDetailPage() {
               <InfoRow label="Role" value={report.reportedBy?.role} />
               <InfoRow label="Organization" value={report.reportedBy?.organization} />
               <InfoRow label="Reported" value={timeAgo(report.createdAt)} />
+
+              {/* Finder contact — visible to logged in users */}
+              {isAuthenticated && report.status !== 'resolved' && (
+                <div className="mt-4 pt-4 border-t">
+                  <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-3">
+                    Finder Contact Details
+                  </p>
+                  <div className="space-y-2">
+                    {report.reportedBy?.phone && (
+                      <a
+                        href={`tel:${report.reportedBy.phone}`}
+                        className="flex items-center gap-3 p-3 bg-green-50 border border-green-200 rounded-lg hover:bg-green-100 transition-colors group"
+                      >
+                        <div className="w-8 h-8 bg-green-500 rounded-full flex items-center justify-center shrink-0">
+                          <Phone className="w-4 h-4 text-white" />
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <div className="text-xs text-green-700 font-medium">Call Finder Directly</div>
+                          <div className="text-sm font-bold text-green-900">{report.reportedBy.phone}</div>
+                        </div>
+                        <span className="text-xs text-green-600 font-medium group-hover:underline">Call Now</span>
+                      </a>
+                    )}
+                    {report.reportedBy?.email && (
+                      <a
+                        href={`mailto:${report.reportedBy.email}`}
+                        className="flex items-center gap-3 p-3 bg-blue-50 border border-blue-200 rounded-lg hover:bg-blue-100 transition-colors group"
+                      >
+                        <div className="w-8 h-8 bg-blue-500 rounded-full flex items-center justify-center shrink-0">
+                          <Mail className="w-4 h-4 text-white" />
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <div className="text-xs text-blue-700 font-medium">Email Finder</div>
+                          <div className="text-sm font-bold text-blue-900 truncate">{report.reportedBy.email}</div>
+                        </div>
+                        <span className="text-xs text-blue-600 font-medium group-hover:underline">Email</span>
+                      </a>
+                    )}
+                    {!report.reportedBy?.phone && !report.reportedBy?.email && (
+                      <p className="text-sm text-muted-foreground italic">Contact details not provided by finder.</p>
+                    )}
+                  </div>
+                  <p className="text-xs text-muted-foreground mt-3 flex items-center gap-1">
+                    <Shield className="w-3 h-3" />
+                    Contact info visible only to logged-in users. Please also submit a formal claim for verification.
+                  </p>
+                </div>
+              )}
+
+              {/* If not logged in — prompt to login to see contact */}
+              {!isAuthenticated && report.status !== 'resolved' && (
+                <div className="mt-4 pt-4 border-t">
+                  <div className="bg-muted/50 rounded-lg p-3 text-center">
+                    <Phone className="w-5 h-5 text-muted-foreground mx-auto mb-1" />
+                    <p className="text-xs text-muted-foreground">
+                      <Link href="/auth/login" className="text-primary font-medium hover:underline">Sign in</Link>
+                      {" "}to see finder contact details and call directly.
+                    </p>
+                  </div>
+                </div>
+              )}
             </div>
 
             {/* Actions */}
